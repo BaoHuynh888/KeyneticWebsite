@@ -4,13 +4,5 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      '@': '/src'
-    },
-  },
-  build: {
-    outDir: 'dist',
-  },
-  base: './'
-})
+  base: process.env.VITE_BASE_PATH || "/KeyneticWebsite",
+});
