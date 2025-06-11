@@ -10,6 +10,7 @@ import CartPage from "./pages/cart"
 import TermsPage from "./pages/terms"
 // import CheckoutPage from "./pages/checkout"
 // import NotFoundPage from "./pages/not-found"
+import './index.css';
 
 function App() {
   return (
