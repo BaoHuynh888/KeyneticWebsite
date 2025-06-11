@@ -2,9 +2,9 @@
 
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { ShoppingCart } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ShoppingCart, Minus, Plus, Trash2 } from "lucide-react"
 import { useCart } from "../contexts/cart-context"
+import "../styles/cart.css"
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, getCartTotal } = useCart()
@@ -20,62 +20,76 @@ export default function CartPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="container flex flex-col items-center justify-center py-20">
-        <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
-        <h1 className="text-2xl font-bold">Your cart is empty</h1>
-        <p className="text-muted-foreground mt-2">
-          Looks like you haven't added any products to your cart yet.
-        </p>
-        <Link to="/products">
-          <Button className="mt-4">Browse Products</Button>
-        </Link>
+      <div className="container cart-container">
+        <div className="empty-cart">
+          <ShoppingCart className="empty-cart-icon" />
+          <h1>Your cart is empty</h1>
+          <p>Looks like you haven't added any products to your cart yet.</p>
+          <Link to="/products" className="btn btn-primary">
+            Browse Products
+          </Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container px-4 py-8 md:px-6">
-      <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
-      <div className="space-y-6">
-        {cart.map((item) => (
-          <div
-            key={item.id}
-            className="flex flex-col md:flex-row md:items-center md:justify-between border-b pb-4"
-          >
-            <div>
-              <h2 className="text-lg font-semibold">{item.name}</h2>
-              <p className="text-muted-foreground">${item.price.toFixed(2)}</p>
-              <div className="flex items-center mt-2 space-x-2">
-                <label htmlFor={`quantity-${item.id}`} className="text-sm">
-                  Quantity:
-                </label>
-                <input
-                  id={`quantity-${item.id}`}
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                  className="w-16 border rounded px-2 py-1"
-                />
+    <div className="container cart-container">
+      <div className="cart-content">
+        <div className="cart-header">
+          <h1>Shopping Cart</h1>
+        </div>
+
+        <div className="cart-items">
+          {cart.map((item) => (
+            <div key={item.id} className="cart-item">
+              <img src={item.images?.[0] || "/placeholder.svg"} alt={item.name} className="cart-item-image" />
+              <div className="cart-item-details">
+                <h3 className="cart-item-name">{item.name}</h3>
+                <p className="cart-item-price">${item.price.toFixed(2)} each</p>
+                <div className="cart-item-controls">
+                  <div className="cart-quantity-controls">
+                    <button
+                      className="cart-quantity-btn"
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      disabled={item.quantity <= 1}
+                    >
+                      <Minus style={{ height: "1rem", width: "1rem" }} />
+                    </button>
+                    <span className="cart-quantity-display">{item.quantity}</span>
+                    <button className="cart-quantity-btn" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                      <Plus style={{ height: "1rem", width: "1rem" }} />
+                    </button>
+                  </div>
+                  <button className="remove-btn" onClick={() => removeFromCart(item.id)}>
+                    <Trash2 style={{ height: "1rem", width: "1rem" }} />
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="mt-4 md:mt-0">
-              <Button
-                variant="destructive"
-                onClick={() => removeFromCart(item.id)}
-              >
-                Remove
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div className="flex justify-between items-center mt-8">
-        <p className="text-lg font-semibold">Total: ${getCartTotal().toFixed(2)}</p>
-        <Button onClick={handleCheckout} disabled={isProcessing}>
-          {isProcessing ? "Processing..." : "Checkout"}
-        </Button>
+        <div className="cart-summary">
+          <div className="cart-total">
+            <span>Total: ${getCartTotal().toFixed(2)}</span>
+          </div>
+          <div className="checkout-section">
+            <Link to="/products" className="continue-shopping btn btn-outline">
+              Continue Shopping
+            </Link>
+            <button className="checkout-btn" onClick={handleCheckout} disabled={isProcessing}>
+              {isProcessing ? (
+                <>
+                  <div className="processing-spinner"></div>
+                  Processing...
+                </>
+              ) : (
+                "Proceed to Checkout"
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

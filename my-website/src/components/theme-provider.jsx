@@ -1,20 +1,47 @@
-import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
-import { useEffect, useState } from "react";
+"use client"
 
-export const useTheme = useNextTheme
+import { createContext, useContext, useEffect, useState } from "react"
 
-export function ThemeProvider({ children, ...props }) {
-  const [mounted, setMounted] = useState(false);
+const ThemeContext = createContext({
+  theme: "light",
+  setTheme: () => null,
+})
+
+export function ThemeProvider({ children, defaultTheme = "system", storageKey = "vite-ui-theme" }) {
+  const [theme, setTheme] = useState(
+    () => (typeof window !== "undefined" ? localStorage.getItem(storageKey) : null) || defaultTheme,
+  )
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const root = window.document.documentElement
 
-  if (!mounted) return null;
+    root.classList.remove("light", "dark")
 
-  return (
-    <NextThemesProvider attribute="class" defaultTheme="system" enableSystem {...props}>
-      {children}
-    </NextThemesProvider>
-  );
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+
+      root.classList.add(systemTheme)
+      return
+    }
+
+    root.classList.add(theme)
+  }, [theme])
+
+  const value = {
+    theme,
+    setTheme: (newTheme) => {
+      localStorage.setItem(storageKey, newTheme)
+      setTheme(newTheme)
+    },
+  }
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+}
+
+export const useTheme = () => {
+  const context = useContext(ThemeContext)
+
+  if (context === undefined) throw new Error("useTheme must be used within a ThemeProvider")
+
+  return context
 }

@@ -3,101 +3,113 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Menu, Search, ShoppingCart, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useCart } from "../contexts/cart-context"
 import { ThemeToggle } from "./theme-toggle"
+import "../styles/navbar.css"
 
 export default function Navbar() {
   const { cart } = useCart()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0)
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
-      <div className="container flex h-16 items-center">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[240px] sm:w-[300px]">
-            <nav className="flex flex-col gap-4 text-lg font-medium">
-              <Link to="/" className="hover:text-primary">
+    <>
+      <header className="navbar">
+        <div className="navbar-container">
+          <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
+            <Menu className="mobile-menu-icon" />
+            <span className="sr-only">Toggle menu</span>
+          </button>
+
+          <Link to="/" className="logo-link">
+            <span className="logo-text">Keynetic</span>
+          </Link>
+
+          <nav className="desktop-nav">
+            <Link to="/" className="nav-link">
+              Home
+            </Link>
+            <Link to="/products" className="nav-link">
+              All Keyboards
+            </Link>
+            <Link to="/products?category=mechanical" className="nav-link">
+              Mechanical
+            </Link>
+            <Link to="/products?category=optical" className="nav-link">
+              Optical
+            </Link>
+            <Link to="/products?category=accessories" className="nav-link">
+              Accessories
+            </Link>
+          </nav>
+
+          <div className="navbar-actions">
+            {isSearchOpen ? (
+              <div className="search-container">
+                <input type="search" placeholder="Search keyboards..." className="search-input" />
+                <button className="action-btn" onClick={() => setIsSearchOpen(false)}>
+                  <X className="action-icon" />
+                </button>
+              </div>
+            ) : (
+              <button className="action-btn" onClick={() => setIsSearchOpen(true)}>
+                <Search className="action-icon" />
+                <span className="sr-only">Search</span>
+              </button>
+            )}
+
+            <ThemeToggle />
+
+            <Link to="/cart">
+              <button className="action-btn">
+                <ShoppingCart className="action-icon" />
+                {cartItemsCount > 0 && <span className="cart-badge">{cartItemsCount}</span>}
+                <span className="sr-only">Cart</span>
+              </button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <>
+          <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="mobile-menu-panel">
+            <nav className="mobile-nav">
+              <Link to="/" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
                 Home
               </Link>
-              <Link to="/products" className="hover:text-primary">
+              <Link to="/products" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
                 All Keyboards
               </Link>
-              <Link to="/products?category=mechanical" className="hover:text-primary">
+              <Link
+                to="/products?category=mechanical"
+                className="mobile-nav-link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 Mechanical
               </Link>
-              <Link to="/products?category=optical" className="hover:text-primary">
+              <Link
+                to="/products?category=optical"
+                className="mobile-nav-link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 Optical
               </Link>
-              <Link to="/products?category=accessories" className="hover:text-primary">
+              <Link
+                to="/products?category=accessories"
+                className="mobile-nav-link"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 Accessories
               </Link>
             </nav>
-          </SheetContent>
-        </Sheet>
-
-        <Link to="/" className="mr-6 flex items-center space-x-2">
-          <span className="text-xl font-bold">Keynetic</span>
-        </Link>
-
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link to="/" className="hover:text-primary transition-colors">
-            Home
-          </Link>
-          <Link to="/products" className="hover:text-primary transition-colors">
-            All Keyboards
-          </Link>
-          <Link to="/products?category=mechanical" className="hover:text-primary transition-colors">
-            Mechanical
-          </Link>
-          <Link to="/products?category=optical" className="hover:text-primary transition-colors">
-            Optical
-          </Link>
-          <Link to="/products?category=accessories" className="hover:text-primary transition-colors">
-            Accessories
-          </Link>
-        </nav>
-
-        <div className="flex items-center ml-auto gap-2">
-          {isSearchOpen ? (
-            <div className="flex items-center">
-              <Input type="search" placeholder="Search keyboards..." className="w-[150px] md:w-[200px] lg:w-[300px]" />
-              <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-          ) : (
-            <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
-              <Search className="h-5 w-5" />
-              <span className="sr-only">Search</span>
-            </Button>
-          )}
-
-          <ThemeToggle />
-
-          <Link to="/cart">
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-                  {cartItemsCount}
-                </span>
-              )}
-              <span className="sr-only">Cart</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </header>
+          </div>
+        </>
+      )}
+    </>
   )
 }

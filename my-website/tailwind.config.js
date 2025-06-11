@@ -1,9 +1,10 @@
-/** @type {import('tailwindcss').Config} */
+/** @type {import('tailwindcss/postcss').Config} */
 module.exports = {
     darkMode: ["class"],
     content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}"
+    "./src/**/*.{js,ts,jsx,tsx}",
+	"./public/index.html"
   ],
   theme: {
   	extend: {

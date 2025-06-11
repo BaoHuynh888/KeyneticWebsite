@@ -3,20 +3,19 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { ChevronLeft, Minus, Plus, ShoppingCart, Star } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { products } from "../data/products"
 import { useCart } from "../contexts/cart-context"
+import "../styles/product-detail.css"
 
 export default function ProductDetailPage() {
   const { id } = useParams()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
+  const [activeTab, setActiveTab] = useState("details")
   const { addToCart } = useCart()
 
   useEffect(() => {
-    // Simulate API fetch
     const fetchProduct = () => {
       setLoading(true)
       const foundProduct = products.find((p) => p.id === Number.parseInt(id))
@@ -47,10 +46,10 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="container flex items-center justify-center py-20">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-          <p className="mt-4">Loading product...</p>
+      <div className="container loading-container">
+        <div className="loading-content">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Loading product...</p>
         </div>
       </div>
     )
@@ -58,122 +57,114 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="container flex flex-col items-center justify-center py-20">
-        <h1 className="text-2xl font-bold">Product Not Found</h1>
-        <p className="text-muted-foreground mt-2">The product you're looking for doesn't exist.</p>
-        <Link to="/products">
-          <Button className="mt-4">Back to Products</Button>
+      <div className="container not-found-container">
+        <h1 className="not-found-title">Product Not Found</h1>
+        <p className="not-found-description">The product you're looking for doesn't exist.</p>
+        <Link to="/products" className="btn btn-primary not-found-btn">
+          Back to Products
         </Link>
       </div>
     )
   }
 
   return (
-    <div className="container px-4 py-8 md:px-6 md:py-12">
-      <Link
-        to="/products"
-        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6"
-      >
-        <ChevronLeft className="mr-1 h-4 w-4" />
+    <div className="container product-detail-container">
+      <Link to="/products" className="back-link">
+        <ChevronLeft className="back-icon" />
         Back to Products
       </Link>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <div className="flex flex-col gap-4">
-          <div className="overflow-hidden rounded-lg border bg-background">
-            <img
-              src={product.images[0] || "/placeholder.svg"}
-              alt={product.name}
-              className="aspect-square w-full object-cover"
-            />
+      <div className="product-detail-grid">
+        <div className="product-images">
+          <div className="main-image-container">
+            <img src={product.images[0] || "/placeholder.svg"} alt={product.name} className="main-image" />
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">{product.name}</h1>
-            <div className="mt-2 flex items-center gap-2">
-              <div className="flex items-center">
+        <div className="product-info">
+          <div className="product-header">
+            <h1>{product.name}</h1>
+            <div className="rating-container">
+              <div className="stars-container">
                 {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${
-                      i < Math.floor(product.rating) ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground"
-                    }`}
-                  />
+                  <Star key={i} className={`star ${i < Math.floor(product.rating) ? "star-filled" : "star-empty"}`} />
                 ))}
               </div>
-              <span className="text-sm text-muted-foreground">({product.rating})</span>
+              <span className="rating-text">({product.rating})</span>
             </div>
           </div>
 
-          <div className="text-2xl font-bold">${product.price.toFixed(2)}</div>
+          <div className="price">${product.price.toFixed(2)}</div>
 
-          <div className="prose prose-sm max-w-none">
+          <div className="description">
             <p>{product.description}</p>
           </div>
 
-          <div className="flex flex-col gap-2 pt-4">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Availability:</span>
+          <div className="product-details">
+            <div className="detail-row">
+              <span className="detail-label">Availability:</span>
               {product.stock > 0 ? (
-                <span className="text-green-600">In Stock ({product.stock} available)</span>
+                <span className="stock-available">In Stock ({product.stock} available)</span>
               ) : (
-                <span className="text-red-600">Out of Stock</span>
+                <span className="stock-unavailable">Out of Stock</span>
               )}
             </div>
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Category:</span>
-              <span className="capitalize">{product.category}</span>
+            <div className="detail-row">
+              <span className="detail-label">Category:</span>
+              <span className="category-text">{product.category}</span>
             </div>
           </div>
 
           {product.stock > 0 && (
-            <div className="flex flex-col gap-4 pt-4">
-              <div className="flex items-center gap-2">
-                <span className="font-medium">Quantity:</span>
-                <div className="flex items-center">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 rounded-r-none"
+            <div className="purchase-section">
+              <div className="quantity-section">
+                <span className="quantity-label">Quantity:</span>
+                <div className="quantity-controls">
+                  <button
+                    className="quantity-btn quantity-btn-left"
                     onClick={decrementQuantity}
                     disabled={quantity <= 1}
                   >
-                    <Minus className="h-4 w-4" />
-                    <span className="sr-only">Decrease quantity</span>
-                  </Button>
-                  <div className="flex h-8 w-12 items-center justify-center border-y">{quantity}</div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 rounded-l-none"
+                    <Minus style={{ height: "1rem", width: "1rem" }} />
+                  </button>
+                  <div className="quantity-display">{quantity}</div>
+                  <button
+                    className="quantity-btn quantity-btn-right"
                     onClick={incrementQuantity}
                     disabled={quantity >= product.stock}
                   >
-                    <Plus className="h-4 w-4" />
-                    <span className="sr-only">Increase quantity</span>
-                  </Button>
+                    <Plus style={{ height: "1rem", width: "1rem" }} />
+                  </button>
                 </div>
               </div>
 
-              <Button className="w-full" onClick={handleAddToCart}>
-                <ShoppingCart className="mr-2 h-4 w-4" />
+              <button className="btn btn-primary add-to-cart-btn" onClick={handleAddToCart}>
+                <ShoppingCart className="cart-icon" />
                 Add to Cart
-              </Button>
+              </button>
             </div>
           )}
         </div>
       </div>
 
-      <div className="mt-12">
-        <Tabs defaultValue="details">
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="features">Features</TabsTrigger>
-          </TabsList>
-          <TabsContent value="details" className="pt-4">
-            <div className="prose max-w-none">
+      <div className="product-tabs">
+        <div className="tabs-list">
+          <button
+            className={`tab-trigger ${activeTab === "details" ? "active" : ""}`}
+            onClick={() => setActiveTab("details")}
+          >
+            Details
+          </button>
+          <button
+            className={`tab-trigger ${activeTab === "features" ? "active" : ""}`}
+            onClick={() => setActiveTab("features")}
+          >
+            Features
+          </button>
+        </div>
+        <div className="tab-content">
+          {activeTab === "details" && (
+            <div className="description">
               <p>{product.description}</p>
               <p>
                 This premium keyboard is designed for both enthusiasts and professionals who demand the best typing
@@ -181,40 +172,33 @@ export default function ProductDetailPage() {
                 sessions and gaming.
               </p>
             </div>
-          </TabsContent>
-          <TabsContent value="features" className="pt-4">
-            <ul className="grid gap-2">
+          )}
+          {activeTab === "features" && (
+            <ul className="features-list">
               {product.features.map((feature, index) => (
-                <li key={index} className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                    <Check className="h-4 w-4 text-primary" />
+                <li key={index} className="feature-item">
+                  <div className="feature-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
                   </div>
                   <span>{feature}</span>
                 </li>
               ))}
             </ul>
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </div>
     </div>
-  )
-}
-
-function Check(props) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
   )
 }
